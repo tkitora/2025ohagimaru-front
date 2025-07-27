@@ -21,8 +21,8 @@
 ### ローカルでテストしたい場合
 ```npm run dev```
 ### 作業をしたい場合
-```git checkout main
-git checkout -b "feature/BranchName"```
+```git checkout main```
+```git checkout -b "feature/BranchName"```
 mainブランチから作業用ブランチを作成してそのブランチを新規作成&移動
 基本的に作業用ブランチは使い捨て
 ### 作業をする前に
@@ -34,9 +34,9 @@ aタグ、またはLink importして使用(乱雑しているので適当に参�
 例: 
 ```<div className="bg-red-500 m-20">```
 ### プルリクを送る方法
-```git add .
-git commit -m "[ADD]READMEを変えたよ"
-git push origin feature/yourbranch```
+```git add .```
+```git commit -m "[ADD]READMEを変えたよ"```
+```git push origin feature/yourbranch```
 
 
 
