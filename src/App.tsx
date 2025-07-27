@@ -1,16 +1,20 @@
 // import { useState } from 'react'
 import './styles/App.css'
-import { BrowserRouter as Router,Routes,Route } from 'react-router-dom'
-import { HomePage, GardenPage, MyGardenPage } from './pages'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HomePage, GardenPage, MyGardenPage, Header, Footer } from './index'
 
-function App () {
+function App() {
   return (
     <Router>
-      <Routes>
-        <Route path='/' element={<HomePage />} />
-        <Route path='/garden' element={<GardenPage />} />
-        <Route path='/mygarden' element={<MyGardenPage />} />
-      </Routes>
+      <Header />
+      <main>
+        <Routes>
+          <Route path='/' element={<HomePage />} />
+          <Route path='/garden' element={<GardenPage />} />
+          <Route path='/mygarden' element={<MyGardenPage />} />
+        </Routes>
+      </main>
+      <Footer />
     </Router>
   )
 }
