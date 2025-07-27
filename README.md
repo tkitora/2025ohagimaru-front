@@ -1,3 +1,49 @@
+# 簡単な手引き
+### App.tsx
+- ページの概要を決定
+- ページを追加したい場合やサイト全体の構成についての設定をしたい場合はここでdiv作成->classnameなどで変更
+- 新規ページ追加はindex.tsxと同時にimportをしてあげる
+### styles/App.css
+- tailwindcssのインポート
+- 他ファイルでtailwindをサポート
+### index.tsx
+- ページを簡略化してインポートする
+- 新しいページ、コンポーネントなどを追加したい際は他参照で追記、import追加
+- App.tsxにimportお忘れなく
+### main.tsx
+- ファイルの大外を決定
+- 触らない
+### 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
