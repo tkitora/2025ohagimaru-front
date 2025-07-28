@@ -20,8 +20,9 @@
 ```git pull ここにurl```
 ### ローカルでテストしたい場合
 ```
-npm install //初回のみ
-npm run dev```
+npm install
+npm run dev
+```
 ### 作業をしたい場合
 ```git
 git checkout main
