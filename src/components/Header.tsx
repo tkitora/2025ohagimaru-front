@@ -1,12 +1,16 @@
 function Header () {
   return (
-    <header className="flex items-center justify-between p-4 bg-[#111827] text-white">
-      <h1 className="text-xl">Ohagimaru Garden</h1>
+    <header className="flex items-center justify-between p-4 bg-blue-400 text-white">
+      <h1 className="text-xl font-sans">はなかんぱ</h1>
       <nav>
         <ul className="flex space-x-4">
-          <li><a href="/">Home</a></li>
-          <li><a href="/garden">Garden</a></li>
-          <li><a href="/mygarden">My Garden</a></li>
+          {/* <li><a href="/">ホーム</a></li> */}
+          <li>
+            <a href="/garden" className="text-xl font-sans">おにわ</a>
+          </li>
+          <li>
+            <a href="/mygarden" className="text-xl font-sans">あなたのおにわ</a>
+          </li>
         </ul>
       </nav>
     </header>
