@@ -1,5 +1,7 @@
 import React from 'react';
 import backgroundImage from '../assets/Home/background.png';
+import RotatingSun from '../components/RotatingSun';//太陽のコンポーネントをインポート
+import MovingClouds from '../components/MovingCloud';//雲のコンポーネントをインポート
 
 // このコンポーネントは、提供されたコードを画面サイズにフィットするよう再構築します。
 function HomePage() {
@@ -12,6 +14,8 @@ function HomePage() {
         backgroundImage: `url(${backgroundImage})`,
       }}
     >
+     <RotatingSun /> {/*太陽のコンポーネントを配置 */}
+      <MovingClouds /> {/*雲のコンポーネントを配置 */}
         
         {/* メインコンテンツ - 画面中央に固定 */}
         <div 
