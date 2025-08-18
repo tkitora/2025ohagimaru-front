@@ -1,7 +1,7 @@
 // import { useState } from 'react'
 import './styles/App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { HomePage, GardenPage, MyGardenPage, Header, Footer } from './index'
+import { HomePage, GardenPage, MyGardenPage, Header, } from './index'
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
           <Route path='/mygarden' element={<MyGardenPage />} />
         </Routes>
       </main>
-      <Footer />
+      {/*<Footer />*/}
     </Router>
   )
 }
