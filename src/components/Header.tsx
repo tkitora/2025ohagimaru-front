@@ -6,7 +6,7 @@ function Header () {
         <ul className="flex space-x-4">
           {/* <li><a href="/">ホーム</a></li> */}
           <li>
-            <a href="/flowergarden" className="text-xl font-sans">はなばたけ</a>
+            <a href="/flowergarden" className="text-xl font-sans">花畑</a>
           </li>
           <li>
             <a href="/garden" className="text-xl font-sans">おにわ</a>
