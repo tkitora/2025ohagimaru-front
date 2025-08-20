@@ -11,6 +11,12 @@ function Header () {
           <li>
             <a href="/mygarden" className="text-xl font-sans">あなたのおにわ</a>
           </li>
+          <li>
+            <a href="" className="text-xl font-sans">ホーム</a>
+          </li>
+          <li>
+            <a href="/picturebook" className="text-xl font-sans">図鑑</a>
+          </li>
         </ul>
       </nav>
     </header>
