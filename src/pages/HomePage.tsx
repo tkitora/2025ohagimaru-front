@@ -22,7 +22,9 @@ function HomePage() {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
         >
             {/* 文字サイズをビューポートの幅に応じて調整します。 */}
+            <a href="/FlowerGarden">
             <h1 className="text-[20vw] md:text-[16vw] lg:text-[12vw] xl:text-[8vw] text-black font-normal leading-none mb-8 whitespace-nowrap">花看破</h1>
+            </a>
         </div>
     </div>
   );
