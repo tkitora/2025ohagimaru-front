@@ -3,7 +3,7 @@ import type { FlowerList } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { useEffect, useState } from 'react'; 
 
-const images = import.meta.glob('../assets/*.png', {
+const images = import.meta.glob('../assets/flowers/*.png', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;
