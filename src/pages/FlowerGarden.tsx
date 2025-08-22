@@ -221,6 +221,13 @@ function HomePage() {
       {/* 画面右上に回転する太陽コンポーネントを配置 */}
       <RotatingSun />
 
+          {error && (
+      <div className="absolute top-5 left-5 z-20 rounded-md bg-red-100 p-4 text-red-700">
+        <p className="font-bold">エラーが発生しました</p>
+        <p>{error}</p>
+      </div>
+    )}
+
       {/* デバッグモードの切り替えと花数の設定UI */}
       <div className="absolute top-5 right-5 z-10 flex flex-col items-end space-y-2">
         <div className="flex items-center space-x-2">
