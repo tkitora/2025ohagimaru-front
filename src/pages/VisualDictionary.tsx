@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import backgroundImage from '../assets/VisualDictionary/VisualDictionaryBackGround.png';
 import cardImage from '../assets/VisualDictionary/VisualDictionaryCard.png';
+import FlowerPopup from '../components/FlowerDetail'; // Popupコンポーネントをインポート
+import type { FlowerList } from '../types'; // 型定義をインポート
 
 // データの型を定義
 interface FlowerData {
@@ -18,7 +20,8 @@ const images = import.meta.glob('../assets/flowers/*.png', {
 // ファイル名から画像ソースを取得するヘルパー関数
 const getImageSrc = (type: string): string | undefined => {
   const match = Object.entries(images).find(([path]) =>
-    path.endsWith(`${type}.png`)
+    // ファイル名が完全に一致するように修正
+    path.endsWith(`/${type}.png`)
   );
   return match?.[1];
 };
@@ -26,6 +29,23 @@ const getImageSrc = (type: string): string | undefined => {
 function VisualDictionary() {
   const [flowers, setFlowers] = useState<FlowerData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  // ▼▼▼ ここから追加 ▼▼▼
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
+
+  // ポップアップを開く関数
+  const handleOpenPopup = (flower: FlowerList) => {
+    setSelectedFlower(flower);
+    setIsPopupOpen(true);
+  };
+
+  // ポップアップを閉じる関数
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedFlower(null);
+  };
+  // ▲▲▲ ここまで追加 ▲▲▲
 
   useEffect(() => {
     const fetchFlowers = async () => {
@@ -51,6 +71,7 @@ function VisualDictionary() {
   const row2Flowers = flowers.slice(4, 9);
   const row3Flowers = flowers.slice(9, 13);
 
+  // 花のカードを描画する関数
   const renderFlowerCards = (flowers: FlowerData[]) => {
     return flowers.map((flower, index) => {
       const imgSrc = getImageSrc(flower.flowertype);
@@ -59,12 +80,19 @@ function VisualDictionary() {
         console.warn(`画像が見つかりません: ${flower.flowertype}.png`);
         return null;
       }
+      
+      // FlowerDetailに渡すためのデータを作成
+      const flowerDetailData: FlowerList = {
+        flowertype: flower.flowertype,
+        name: flower.name,
+      };
 
       return (
         <div
           key={index}
           className="relative w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 flex flex-col items-center justify-center p-2
-          transition-transform duration-300 hover:scale-110"
+          transition-transform duration-300 hover:scale-110 cursor-pointer" // cursor-pointerを追加
+          onClick={() => handleOpenPopup(flowerDetailData)} // ★★★ onClickイベントを追加 ★★★
         >
           {/* カードの背景画像 */}
           <img
@@ -99,7 +127,7 @@ function VisualDictionary() {
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: 'cover', // 比率を無視してコンテナを覆うように変更
+          backgroundSize: 'cover',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
         }}
@@ -129,6 +157,11 @@ function VisualDictionary() {
           {renderFlowerCards(row3Flowers)}
         </div>
       </div>
+
+      {/* ▼▼▼ ポップアップの表示処理を追加 ▼▼▼ */}
+      {isPopupOpen && selectedFlower && (
+        <FlowerPopup flower={selectedFlower} onClose={handleClosePopup} />
+      )}
     </div>
   );
 }
