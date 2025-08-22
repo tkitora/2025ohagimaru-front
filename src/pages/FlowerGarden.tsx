@@ -3,6 +3,9 @@ import backgroundImage from '../assets/Home/gardenBackground.png';
 import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
 import roseImage from '../assets/flowers/flower_calm.png';
+import FlowerPopup from '../components/FlowerDetail';
+import { dummyFlowers } from '../testDate';
+import type { FlowerList } from '../types';
 
 // データの型を定義します。supabaseから取得するデータの構造に合わせます。
 interface FlowerData {
@@ -153,6 +156,18 @@ function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [flowerCount, setFlowerCount] = useState(0);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
+
+  const handleOpenPopup = (flower: FlowerList) => {
+    setSelectedFlower(flower);
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedFlower(null);
+  };
 
   // コンポーネントがマウントされた時や、デバッグモードが切り替わった時にデータを取得
   useEffect(() => {
@@ -162,7 +177,7 @@ function HomePage() {
         // デバッグモードの場合：指定された数のダミーデータを生成
         fetchedData = Array.from({ length: flowerCount }, (_, i) => ({
           id: i + 1,
-          selected_flower: 'rose', 
+          selected_flower: 'rose',
           created_at: new Date().toISOString(),
         }));
       } else {
@@ -221,12 +236,12 @@ function HomePage() {
       {/* 画面右上に回転する太陽コンポーネントを配置 */}
       <RotatingSun />
 
-          {error && (
-      <div className="absolute top-5 left-5 z-20 rounded-md bg-red-100 p-4 text-red-700">
-        <p className="font-bold">エラーが発生しました</p>
-        <p>{error}</p>
-      </div>
-    )}
+      {error && (
+        <div className="absolute top-5 left-5 z-20 rounded-md bg-red-100 p-4 text-red-700">
+          <p className="font-bold">エラーが発生しました</p>
+          <p>{error}</p>
+        </div>
+      )}
 
       {/* デバッグモードの切り替えと花数の設定UI */}
       <div className="absolute top-5 right-5 z-10 flex flex-col items-end space-y-2">
@@ -279,6 +294,19 @@ function HomePage() {
           );
         })}
       </div>
+
+      <div className="absolute bottom-5 left-5 z-10">
+        <button
+          onClick={() => handleOpenPopup(dummyFlowers[0])}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          ポップアップ表示
+        </button>
+      </div>
+
+      {isPopupOpen && selectedFlower && (
+        <FlowerPopup flower={selectedFlower} onClose={handleClosePopup} />
+      )}
     </div>
   );
 }
