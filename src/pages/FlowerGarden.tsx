@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import backgroundImage from '../assets/Home/gardenBackground.png';
 import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
+import roseImage from '../assets/flowers/flower_calm.png';
 import FlowerPopup from '../components/FlowerDetail';
 import type { FlowerList } from '../types';
 
@@ -9,6 +10,7 @@ import type { FlowerList } from '../types';
 interface FlowerData {
   id: number;
   selected_flower: string;
+  created_at?: string;
 }
 
 // アセットフォルダ内のすべての花画像をまとめてインポート
@@ -150,38 +152,89 @@ function HomePage() {
   // 状態管理のためのuseStateフック
   const [flowers, setFlowers] = useState<FlowerData[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [debugMode, setDebugMode] = useState(false);
+  const [flowerCount, setFlowerCount] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
 
-  const handleOpenPopup = (flower: FlowerList) => {
-    setSelectedFlower(flower);
-    setIsPopupOpen(true);
+  const handleOpenPopup = async (flower: FlowerList) => {
+    try {
+      // 1. analysis_resultsから最新のレコードを取得
+      const { data: latestFlower, error: latestFlowerError } = await supabase
+        .from('analysis_results')
+        .select('created_at')
+        .eq('selected_flower', flower.flowertype)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single(); // .single()で単一のオブジェクトとして結果を取得
+
+      if (latestFlowerError) throw latestFlowerError;
+
+      // 2. analysis_resultsから同じ種類の花の数を取得
+      const { count, error: countError } = await supabase
+        .from('analysis_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('selected_flower', flower.flowertype);
+
+      if (countError) throw countError;
+      
+      // 3. flowerlistテーブルのcountとatTimeを更新
+      const { error: updateError } = await supabase
+        .from('flowerlist')
+        .update({ 
+            count: count ?? 0,
+            atTime: latestFlower.created_at // 最新の時刻で更新
+        })
+        .eq('flowertype', flower.flowertype);
+
+      if (updateError) throw updateError;
+
+      // 4. stateを更新してポップアップを表示
+      setSelectedFlower(flower);
+      setIsPopupOpen(true);
+
+    } catch (error: any) {
+        setError(error.message);
+        console.error('エラー:', error.message);
+    }
   };
+  // ▲▲▲ ここまで修正 ▲▲▲
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
     setSelectedFlower(null);
   };
 
-  // コンポーネントがマウントされた時にデータを取得
+  // コンポーネントがマウントされた時や、デバッグモードが切り替わった時にデータを取得
   useEffect(() => {
     const fetchFlowers = async () => {
-      // Supabaseから分析結果のデータを取得
-      const { data, error: fetchError } = await supabase
-        .from('analysis_results')
-        .select('id, selected_flower');
+      let fetchedData: FlowerData[] = [];
+      if (debugMode) {
+        // デバッグモードの場合：指定された数のダミーデータを生成
+        fetchedData = Array.from({ length: flowerCount }, (_, i) => ({
+          id: i + 1,
+          selected_flower: 'rose',
+          created_at: new Date().toISOString(),
+        }));
+      } else {
+        // 通常モードの場合：Supabaseから分析結果のデータを取得
+        const { data, error: fetchError } = await supabase
+          .from('analysis_results')
+          .select('id, selected_flower');
 
-      if (fetchError) {
-        setError(fetchError.message);
-        console.error('データの読み取りエラー: ', fetchError.message);
-        return;
+        if (fetchError) {
+          setError(fetchError.message);
+          console.error('データの読み取りエラー: ', fetchError.message);
+          return;
+        }
+        fetchedData = data as FlowerData[];
       }
       // 取得したデータをstateにセット
-      setFlowers(data as FlowerData[]);
+      setFlowers(fetchedData);
     };
 
     fetchFlowers();
-  }, []); // 依存配列が空なので、コンポーネントが最初にマウントされた時だけ実行
+  }, [debugMode, flowerCount]);
 
   // 現在の花の数に応じて、画像のサイズを決定
   const numFlowers = flowers.length;
@@ -203,6 +256,11 @@ function HomePage() {
     imageSize = 'w-28 h-28';
   }
 
+  // デバッグモードで花の数を変更するイベントハンドラー
+  const handleFlowerCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFlowerCount(Number(e.target.value));
+  };
+
   return (
     <div
       className="w-screen h-screen relative overflow-hidden bg-cover bg-center"
@@ -221,13 +279,39 @@ function HomePage() {
         </div>
       )}
 
+      {/* デバッグモードの切り替えと花数の設定UI */}
+      <div className="absolute top-5 right-5 z-10 flex flex-col items-end space-y-2">
+        <div className="flex items-center space-x-2">
+          <label className="text-white">デバッグモード</label>
+          <input
+            type="checkbox"
+            checked={debugMode}
+            onChange={(e) => setDebugMode(e.target.checked)}
+            className="form-checkbox h-5 w-5 text-pink-600"
+          />
+        </div>
+        {debugMode && (
+          <div className="flex items-center space-x-2">
+            <label className="text-white">花の数:</label>
+            <input
+              type="number"
+              value={flowerCount}
+              onChange={handleFlowerCountChange}
+              className="w-20 px-2 py-1 rounded-md text-gray-800"
+              min="0"
+              max="100"
+            />
+          </div>
+        )}
+      </div>
+
       {/* 画面上に花を配置するコンテナ */}
       <div className="absolute inset-0">
         {/* 取得した花データをループ処理して画像として表示 */}
-        {flowers.slice(0, FLOWER_POSITIONS.length).map((flower) => {
+        {flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
           // 花の種類（selected_flower）に基づいて画像パスを決定
-          const imgSrc = getImageSrc(flower.selected_flower);
-          const position = FLOWER_POSITIONS[flower.id - 1]; // idをインデックスとして利用
+          const imgSrc = debugMode ? roseImage : getImageSrc(flower.selected_flower);
+          const position = FLOWER_POSITIONS[index];
 
           // 画像が見つからない、または配置座標がない場合はスキップ
           if (!imgSrc || !position) return null;
@@ -240,7 +324,7 @@ function HomePage() {
 
           return (
             <img
-              key={flower.id}
+              key={flower.id || index}
               src={imgSrc}
               alt={flower.selected_flower}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110 cursor-pointer`}

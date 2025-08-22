@@ -25,28 +25,63 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
     const [flowerData, setFlowerData] = useState<FlowerData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    // ▼▼▼ このuseEffectに処理をまとめる ▼▼▼
     useEffect(() => {
-        const fetchFlowerData = async () => {
+        const updateAndFetchFlowerData = async () => {
             if (!flower) return;
 
-            const { data, error } = await supabase
-                .from('flowerlist')
-                .select('name, atTime, count, flowerWord')
-                .eq('flowertype', flower.flowertype)
-                .single();
+            try {
+                // 1. analysis_resultsから最新のレコード時刻を取得
+                const { data: latestFlower, error: latestFlowerError } = await supabase
+                    .from('analysis_results')
+                    .select('created_at')
+                    .eq('selected_flower', flower.flowertype)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
 
-            if (error) {
+                if (latestFlowerError) throw latestFlowerError;
+
+                // 2. analysis_resultsから同じ種類の花の数を取得
+                const { count, error: countError } = await supabase
+                    .from('analysis_results')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('selected_flower', flower.flowertype);
+
+                if (countError) throw countError;
+
+                // 3. flowerlistテーブルを更新
+                const { error: updateError } = await supabase
+                    .from('flowerlist')
+                    .update({ 
+                        count: count ?? 0,
+                        atTime: latestFlower.created_at
+                    })
+                    .eq('flowertype', flower.flowertype);
+
+                if (updateError) throw updateError;
+                
+                // 4. 更新後の最新データをflowerlistから取得して表示
+                const { data: finalData, error: finalError } = await supabase
+                    .from('flowerlist')
+                    .select('name, atTime, count, flowerWord')
+                    .eq('flowertype', flower.flowertype)
+                    .single();
+
+                if (finalError) throw finalError;
+                
+                setFlowerData(finalData);
+
+            } catch (error: any) {
                 setError(error.message);
                 console.error('Error fetching flower data:', error);
-            } else {
-                setFlowerData(data);
             }
         };
 
-        fetchFlowerData();
-    }, [flower]);
+        updateAndFetchFlowerData();
+    }, [flower]); // flowerオブジェクトが渡された時に実行
 
-    // 画像パスを取得するロジックをポップアップ内に追加
+    // 画像パスを取得するロジック
     const imgSrc = Object.entries(images).find(([path]) =>
         path.includes(`${flower.flowertype}.png`)
     )?.[1];
@@ -62,10 +97,10 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
                         <h2 className="text-2xl font-bold mb-4">{flowerData.name}</h2>
                         <p>花言葉: {flowerData.flowerWord}</p>
                         <p>最後に見た日時: {new Date(flowerData.atTime).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}</p>
-                        <p>花畑にある数: {flowerData.count}</p>
+                        <p>見た回数: {flowerData.count}</p>
                     </>
                 ) : (
-                    <p>読み込み中...</p>
+                    <p>読み込み中...</p> /* データ取得中はこれが表示される */
                 )}
                 <button onClick={onClose} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
                     閉じる
