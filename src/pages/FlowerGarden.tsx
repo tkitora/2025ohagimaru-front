@@ -2,16 +2,23 @@ import React, { useEffect, useState } from 'react';
 import backgroundImage from '../assets/Home/gardenBackground.png';
 import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
-import roseImage from '../assets/flowers/joy1Sunflower.png';
+import roseImage from '../assets/flowers/flower_calm.png';
+
+// データの型を定義します。supabaseから取得するデータの構造に合わせます。
+interface FlowerData {
+  id: number;
+  selected_flower: string;
+  created_at?: string;
+}
 
 // アセットフォルダ内のすべての花画像をまとめてインポート
 const images = import.meta.glob('../assets/flowers/*.png', {
   eager: true,
   import: 'default',
-});
+}) as Record<string, string>;
 
 // ファイル名から適切な画像ソースを取得するヘルパー関数
-const getImageSrc = (type) => {
+const getImageSrc = (type: string): string | undefined => {
   const match = Object.entries(images).find(([path]) =>
     path.includes(`${type}.png`)
   );
@@ -54,7 +61,7 @@ const FLOWER_POSITIONS = [
   { top: '75%', left: '40%' },
   { top: '90%', left: '35%' },
   { top: '64%', left: '83%' },
-//30
+  //30
   { top: '90%', left: '55%' },
   { top: '45%', left: '65%' },
   { top: '82%', 'left': '71%' },
@@ -122,8 +129,8 @@ const FLOWER_POSITIONS = [
   { top: '60%', left: '87%' },
 
   { top: '70%', left: '95%' },
-  { top: '61%', left: '73%' },
-  { top: '60%', left: '70%' },
+  { top: '56%', left: '73%' },
+  { top: '60%', left: '77%' },
   { top: '55%', left: '60%' },
   { top: '50%', left: '50%' },
   //90
@@ -134,7 +141,7 @@ const FLOWER_POSITIONS = [
   { top: '27%', left: '64%' },
 
   { top: '67%', left: '45%' },
-  { top: '65%', left: '20%' },
+  { top: '59%', left: '20%' },
   { top: '24%', left: '94%' },
   { top: '65%', left: '36%' },
   { top: '87%', left: '13%' },
@@ -142,15 +149,15 @@ const FLOWER_POSITIONS = [
 
 function HomePage() {
   // 状態管理のためのuseStateフック
-  const [flowers, setFlowers] = useState([]);
-  const [error, setError] = useState(null);
+  const [flowers, setFlowers] = useState<FlowerData[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [debugMode, setDebugMode] = useState(false);
   const [flowerCount, setFlowerCount] = useState(0);
 
   // コンポーネントがマウントされた時や、デバッグモードが切り替わった時にデータを取得
   useEffect(() => {
     const fetchFlowers = async () => {
-      let fetchedData = [];
+      let fetchedData: FlowerData[] = [];
       if (debugMode) {
         // デバッグモードの場合：指定された数のダミーデータを生成
         fetchedData = Array.from({ length: flowerCount }, (_, i) => ({
@@ -160,16 +167,16 @@ function HomePage() {
         }));
       } else {
         // 通常モードの場合：Supabaseから分析結果のデータを取得
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('analysis_results')
           .select('id, selected_flower');
 
-        if (error) {
-          setError(error.message);
-          console.error('データの読み取りエラー: ', error.message);
+        if (fetchError) {
+          setError(fetchError.message);
+          console.error('データの読み取りエラー: ', fetchError.message);
           return;
         }
-        fetchedData = data;
+        fetchedData = data as FlowerData[];
       }
       // 取得したデータをstateにセット
       setFlowers(fetchedData);
@@ -199,7 +206,7 @@ function HomePage() {
   }
 
   // デバッグモードで花の数を変更するイベントハンドラー
-  const handleFlowerCountChange = (e) => {
+  const handleFlowerCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFlowerCount(Number(e.target.value));
   };
 
