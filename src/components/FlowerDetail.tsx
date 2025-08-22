@@ -26,27 +26,61 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchFlowerData = async () => {
+        const updateAndFetchFlowerData = async () => {
             if (!flower) return;
 
-            const { data, error } = await supabase
-                .from('flowerlist')
-                .select('name, atTime, count, flowerWord')
-                .eq('flowertype', flower.flowertype)
-                .single();
+            try {
+                // 1. analysis_resultsから最新のレコード時刻を取得
+                const { data: latestFlower, error: latestFlowerError } = await supabase
+                    .from('analysis_results')
+                    .select('created_at')
+                    .eq('selected_flower', flower.flowertype)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
 
-            if (error) {
+                if (latestFlowerError) throw latestFlowerError;
+
+                // 2. analysis_resultsから同じ種類の花の数を取得
+                const { count, error: countError } = await supabase
+                    .from('analysis_results')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('selected_flower', flower.flowertype);
+
+                if (countError) throw countError;
+
+                // 3. flowerlistテーブルを更新
+                const { error: updateError } = await supabase
+                    .from('flowerlist')
+                    .update({ 
+                        count: count ?? 0,
+                        atTime: latestFlower.created_at
+                    })
+                    .eq('flowertype', flower.flowertype);
+
+                if (updateError) throw updateError;
+                
+                // 4. 更新後の最新データをflowerlistから取得して表示
+                const { data: finalData, error: finalError } = await supabase
+                    .from('flowerlist')
+                    .select('name, atTime, count, flowerWord')
+                    .eq('flowertype', flower.flowertype)
+                    .single();
+
+                if (finalError) throw finalError;
+                
+                setFlowerData(finalData);
+
+            } catch (error: any) {
                 setError(error.message);
                 console.error('Error fetching flower data:', error);
-            } else {
-                setFlowerData(data);
             }
         };
 
-        fetchFlowerData();
+        updateAndFetchFlowerData();
     }, [flower]);
 
-    // 画像パスを取得するロジックをポップアップ内に追加
+    // 画像パスを取得するロジック
     const imgSrc = Object.entries(images).find(([path]) =>
         path.includes(`${flower.flowertype}.png`)
     )?.[1];
