@@ -233,6 +233,19 @@ function HomePage() {
           );
         })}
       </div>
+
+      <div className="absolute bottom-5 left-5 z-10">
+        <button
+          onClick={() => handleOpenPopup(dummyFlowers[0])}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          ポップアップ表示
+        </button>
+      </div>
+
+      {isPopupOpen && selectedFlower && (
+        <FlowerPopup flower={selectedFlower} onClose={handleClosePopup} />
+      )}
     </div>
   );
 }
