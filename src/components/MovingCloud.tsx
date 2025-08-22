@@ -1,4 +1,3 @@
-import React from 'react';
 import cloud1Image from '../assets/Home/cloud1.png';
 import cloud2Image from '../assets/Home/cloud2.png';
 import cloud3Image from '../assets/Home/cloud3.png';

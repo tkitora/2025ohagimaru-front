@@ -1,4 +1,3 @@
-import React from 'react';
 import sunImage from '../assets/Home/sun.png';
 
 const RotatingSun = () => {
