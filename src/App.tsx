@@ -1,7 +1,7 @@
 // import { useState } from 'react'
 import './styles/App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { HomePage, GardenPage, MyGardenPage, Header, FlowerGardenPage} from './index'
+import { HomePage, GardenPage, MyGardenPage, Header, FlowerGardenPage,VisualDictionaryPage} from './index'
 
 function App() {
   return (
@@ -13,6 +13,7 @@ function App() {
           <Route path='/garden' element={<GardenPage />} />
           <Route path='/mygarden' element={<MyGardenPage />} />
           <Route path='flowergarden' element={<FlowerGardenPage />} />
+          <Route path='visualdictionary' element={<VisualDictionaryPage />} />
         </Routes>
       </main>
       {/*<Footer />*/}
