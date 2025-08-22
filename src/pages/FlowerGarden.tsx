@@ -1,17 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import backgroundImage from '../assets/Home/gardenBackground.png';
 import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
-import roseImage from '../assets/flowers/flower_calm.png';
-import FlowerPopup from '../components/FlowerDetail';
-import { dummyFlowers } from '../testDate';
-import type { FlowerList } from '../types';
 
 // データの型を定義します。supabaseから取得するデータの構造に合わせます。
 interface FlowerData {
   id: number;
   selected_flower: string;
-  created_at?: string;
 }
 
 // アセットフォルダ内のすべての花画像をまとめてインポート
@@ -67,7 +62,7 @@ const FLOWER_POSITIONS = [
   //30
   { top: '90%', left: '55%' },
   { top: '45%', left: '65%' },
-  { top: '82%', 'left': '71%' },
+  { top: '82%', left: '71%' },
   { top: '75%', left: '85%' },
   { top: '51%', left: '21%' },
 
@@ -154,51 +149,26 @@ function HomePage() {
   // 状態管理のためのuseStateフック
   const [flowers, setFlowers] = useState<FlowerData[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [debugMode, setDebugMode] = useState(false);
-  const [flowerCount, setFlowerCount] = useState(0);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
 
-  const handleOpenPopup = (flower: FlowerList) => {
-    setSelectedFlower(flower);
-    setIsPopupOpen(true);
-  };
-
-  const handleClosePopup = () => {
-    setIsPopupOpen(false);
-    setSelectedFlower(null);
-  };
-
-  // コンポーネントがマウントされた時や、デバッグモードが切り替わった時にデータを取得
+  // コンポーネントがマウントされた時にデータを取得
   useEffect(() => {
     const fetchFlowers = async () => {
-      let fetchedData: FlowerData[] = [];
-      if (debugMode) {
-        // デバッグモードの場合：指定された数のダミーデータを生成
-        fetchedData = Array.from({ length: flowerCount }, (_, i) => ({
-          id: i + 1,
-          selected_flower: 'rose',
-          created_at: new Date().toISOString(),
-        }));
-      } else {
-        // 通常モードの場合：Supabaseから分析結果のデータを取得
-        const { data, error: fetchError } = await supabase
-          .from('analysis_results')
-          .select('id, selected_flower');
+      // Supabaseから分析結果のデータを取得
+      const { data, error: fetchError } = await supabase
+        .from('analysis_results')
+        .select('id, selected_flower');
 
-        if (fetchError) {
-          setError(fetchError.message);
-          console.error('データの読み取りエラー: ', fetchError.message);
-          return;
-        }
-        fetchedData = data as FlowerData[];
+      if (fetchError) {
+        setError(fetchError.message);
+        console.error('データの読み取りエラー: ', fetchError.message);
+        return;
       }
       // 取得したデータをstateにセット
-      setFlowers(fetchedData);
+      setFlowers(data as FlowerData[]);
     };
 
     fetchFlowers();
-  }, [debugMode, flowerCount]);
+  }, []); // 依存配列が空なので、コンポーネントが最初にマウントされた時だけ実行
 
   // 現在の花の数に応じて、画像のサイズを決定
   const numFlowers = flowers.length;
@@ -220,11 +190,6 @@ function HomePage() {
     imageSize = 'w-28 h-28';
   }
 
-  // デバッグモードで花の数を変更するイベントハンドラー
-  const handleFlowerCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFlowerCount(Number(e.target.value));
-  };
-
   return (
     <div
       className="w-screen h-screen relative overflow-hidden bg-cover bg-center"
@@ -243,38 +208,12 @@ function HomePage() {
         </div>
       )}
 
-      {/* デバッグモードの切り替えと花数の設定UI */}
-      <div className="absolute top-5 right-5 z-10 flex flex-col items-end space-y-2">
-        <div className="flex items-center space-x-2">
-          <label className="text-white">デバッグモード</label>
-          <input
-            type="checkbox"
-            checked={debugMode}
-            onChange={(e) => setDebugMode(e.target.checked)}
-            className="form-checkbox h-5 w-5 text-pink-600"
-          />
-        </div>
-        {debugMode && (
-          <div className="flex items-center space-x-2">
-            <label className="text-white">花の数:</label>
-            <input
-              type="number"
-              value={flowerCount}
-              onChange={handleFlowerCountChange}
-              className="w-20 px-2 py-1 rounded-md text-gray-800"
-              min="0"
-              max="100"
-            />
-          </div>
-        )}
-      </div>
-
       {/* 画面上に花を配置するコンテナ */}
       <div className="absolute inset-0">
         {/* 取得した花データをループ処理して画像として表示 */}
         {flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
           // 花の種類（selected_flower）に基づいて画像パスを決定
-          const imgSrc = debugMode ? roseImage : getImageSrc(flower.selected_flower);
+          const imgSrc = getImageSrc(flower.selected_flower);
           const position = FLOWER_POSITIONS[index];
 
           // 画像が見つからない、または配置座標がない場合はスキップ
@@ -282,7 +221,7 @@ function HomePage() {
 
           return (
             <img
-              key={flower.id || index}
+              key={flower.id}
               src={imgSrc}
               alt={flower.selected_flower}
               className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110`}
