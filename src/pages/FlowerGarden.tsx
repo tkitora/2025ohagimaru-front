@@ -228,7 +228,7 @@ function HomePage() {
       </div>
     )}
 
-      {/* デバッグモードの切り替えと花数の設定UI */}
+      {/* デバッグモードの切り替えと花数の設定UI
       <div className="absolute top-5 right-5 z-10 flex flex-col items-end space-y-2">
         <div className="flex items-center space-x-2">
           <label className="text-white">デバッグモード</label>
@@ -253,7 +253,7 @@ function HomePage() {
           </div>
         )}
       </div>
-
+*/}
       {/* 画面上に花を配置するコンテナ */}
       <div className="absolute inset-0">
         {/* 取得した花データをループ処理して画像として表示 */}

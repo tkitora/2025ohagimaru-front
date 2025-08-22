@@ -1,4 +1,3 @@
-import React from 'react';
 import backgroundImage from '../assets/Home/background.png';
 import RotatingSun from '../components/RotatingSun';//太陽のコンポーネントをインポート
 import MovingClouds from '../components/MovingCloud';//雲のコンポーネントをインポート
