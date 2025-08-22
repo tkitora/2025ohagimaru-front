@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import backgroundImage from '../assets/Home/gardenBackground.png';
 import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
@@ -9,6 +9,8 @@ import type { FlowerList } from '../types';
 interface FlowerData {
   id: number;
   selected_flower: string;
+  // created_at フィールドを追加
+  created_at: string;
 }
 
 // アセットフォルダ内のすべての花画像をまとめてインポート
@@ -55,6 +57,13 @@ function FlowerGardenPage() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
 
+  // 新しい状態変数を追加
+  const [showLargeFlower, setShowLargeFlower] = useState(false);
+  const [latestFlowerType, setLatestFlowerType] = useState<string | null>(null);
+
+  // タイマーの状態を管理するためのref
+  const timerId = useRef<NodeJS.Timeout | null>(null);
+
   // ポップアップを開く命令を出すだけのシンプルな関数
   const handleOpenPopup = (flower: FlowerList) => {
     setSelectedFlower(flower);
@@ -69,19 +78,61 @@ function FlowerGardenPage() {
   // 最初に一度だけ花畑のデータを取得する
   useEffect(() => {
     const fetchFlowers = async () => {
+      // 既存の花データを取得
       const { data, error: fetchError } = await supabase
         .from('analysis_results')
-        .select('id, selected_flower');
-
+        .select('id, selected_flower, created_at');
+      
       if (fetchError) {
         setError(fetchError.message);
         console.error('データの読み取りエラー: ', fetchError.message);
         return;
       }
       setFlowers(data as FlowerData[]);
+
+      // 最新のレコードのcreated_atを取得する
+      const { data: latestData, error: latestError } = await supabase
+        .from('analysis_results')
+        .select('selected_flower, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (latestError) {
+        console.error('最新データの読み取りエラー: ', latestError.message);
+        return;
+      }
+
+      if (latestData && latestData.length > 0) {
+        const latestRecord = latestData?.[0];
+        const createdAt = new Date(latestRecord.created_at);
+        const now = new Date();
+        const diffInSeconds = (now.getTime() - createdAt.getTime()) / 1000;
+        
+        // 15秒以内かチェック
+        if (diffInSeconds <= 15) {
+          setShowLargeFlower(true);
+          setLatestFlowerType(latestRecord.selected_flower);
+          
+          // 5秒後に大きな表示を戻すタイマーを設定
+          timerId.current = setTimeout(() => {
+            setShowLargeFlower(false);
+            setLatestFlowerType(null);
+          }, 5000);
+        } else {
+          setShowLargeFlower(false);
+          setLatestFlowerType(null);
+        }
+      }
     };
 
     fetchFlowers();
+
+    // コンポーネントがアンマウントされたときにタイマーをクリア
+    return () => {
+      if (timerId.current) {
+        clearTimeout(timerId.current);
+      }
+    };
   }, []);
 
   // 花の数に応じて画像のサイズを動的に変更
@@ -113,29 +164,39 @@ function FlowerGardenPage() {
       )}
 
       <div className="absolute inset-0">
-        {flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
-          const imgSrc = getImageSrc(flower.selected_flower);
-          // 花の配置がランダムになるようにindex（配列の順番）を使用
-          const position = FLOWER_POSITIONS[index];
+        {/* 最新の花が表示される場合は、他の花を非表示にする */}
+        {showLargeFlower && latestFlowerType ? (
+          <img
+            src={getImageSrc(latestFlowerType)}
+            alt={latestFlowerType}
+            // ホバー効果とクリックイベントを削除
+            className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-256 h-256 z-40`}
+          />
+        ) : (
+          /* 最新の花が表示されていない場合は、通常の花をすべて表示 */
+          flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
+            const imgSrc = getImageSrc(flower.selected_flower);
+            const position = FLOWER_POSITIONS?.[index];
 
-          if (!imgSrc || !position) return null;
-          
-          const flowerDetailData: FlowerList = {
-            flowertype: flower.selected_flower,
-            name: '',
-          };
+            if (!imgSrc || !position) return null;
+            
+            const flowerDetailData: FlowerList = {
+              flowertype: flower.selected_flower,
+              name: '',
+            };
 
-          return (
-            <img
-              key={flower.id}
-              src={imgSrc}
-              alt={flower.selected_flower}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110 cursor-pointer`}
-              style={{ top: position.top, left: position.left }}
-              onClick={() => handleOpenPopup(flowerDetailData)}
-            />
-          );
-        })}
+            return (
+              <img
+                key={flower.id}
+                src={imgSrc}
+                alt={flower.selected_flower}
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110 cursor-pointer z-10`}
+                style={{ top: position.top, left: position.left }}
+                onClick={() => handleOpenPopup(flowerDetailData)}
+              />
+            );
+          })
+        )}
       </div>
 
       {isPopupOpen && selectedFlower && (
