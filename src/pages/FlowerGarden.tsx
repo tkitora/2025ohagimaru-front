@@ -4,7 +4,6 @@ import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
 import roseImage from '../assets/flowers/flower_calm.png';
 import FlowerPopup from '../components/FlowerDetail';
-import { dummyFlowers } from '../testDate';
 import type { FlowerList } from '../types';
 
 // データの型を定義します。supabaseから取得するデータの構造に合わせます。
@@ -29,125 +28,124 @@ const getImageSrc = (type: string): string | undefined => {
 };
 
 // 画面上に花を配置するための座標リスト
-// このリストの順序に従って花が配置されます
 const FLOWER_POSITIONS = [
-  // 画面のさまざまな場所に花を配置
-  { top: '75%', left: '55%' },
-  { top: '75%', left: '35%' },
-  { top: '40%', left: '80%' },
-  { top: '55%', left: '15%' },
-  { top: '68%', left: '70%' },
-  { top: '40%', left: '25%' },
-  { top: '71%', left: '90%' },
-  { top: '45%', left: '40%' },
-  { top: '82%', left: '25%' },
-  { top: '38%', left: '61%' },
-  { top: '36%', left: '48%' },
-  { top: '80%', left: '47%' },
-  { top: '86%', left: '65%' },
-  { top: '78%', left: '77%' },
-  { top: '77%', left: '15%' },
-  { top: '52%', left: '7%' },
-  { top: '30%', left: '32%' },
-  { top: '88%', left: '6%' },
-  { top: '30%', left: '70%' },
-  { top: '29%', left: '88%' },
-  // ... (以降の座標は省略)
-  { top: '30%', left: '15%' },
-  { top: '80%', left: '10%' },
-  { top: '50%', left: '75%' },
-  { top: '55%', left: '60%' },
-  { top: '60%', left: '50%' },
+    // ... (座標リストは変更なし) ...
+    { top: '75%', left: '55%' },
+    { top: '75%', left: '35%' },
+    { top: '40%', left: '80%' },
+    { top: '55%', left: '15%' },
+    { top: '68%', left: '70%' },
+    { top: '40%', left: '25%' },
+    { top: '71%', left: '90%' },
+    { top: '45%', left: '40%' },
+    { top: '82%', left: '25%' },
+    { top: '38%', left: '61%' },
+    { top: '36%', left: '48%' },
+    { top: '80%', left: '47%' },
+    { top: '86%', left: '65%' },
+    { top: '78%', left: '77%' },
+    { top: '77%', left: '15%' },
+    { top: '52%', left: '7%' },
+    { top: '30%', left: '32%' },
+    { top: '88%', left: '6%' },
+    { top: '30%', left: '70%' },
+    { top: '29%', left: '88%' },
+    // ... (以降の座標は省略)
+    { top: '30%', left: '15%' },
+    { top: '80%', left: '10%' },
+    { top: '50%', left: '75%' },
+    { top: '55%', left: '60%' },
+    { top: '60%', left: '50%' },
 
-  { top: '65%', left: '30%' },
-  { top: '40%', left: '54%' },
-  { top: '75%', left: '40%' },
-  { top: '90%', left: '35%' },
-  { top: '64%', left: '83%' },
-  //30
-  { top: '90%', left: '55%' },
-  { top: '45%', left: '65%' },
-  { top: '82%', 'left': '71%' },
-  { top: '75%', left: '85%' },
-  { top: '51%', left: '21%' },
+    { top: '65%', left: '30%' },
+    { top: '40%', left: '54%' },
+    { top: '75%', left: '40%' },
+    { top: '90%', left: '35%' },
+    { top: '64%', left: '83%' },
+    //30
+    { top: '90%', left: '55%' },
+    { top: '45%', left: '65%' },
+    { top: '82%', 'left': '71%' },
+    { top: '75%', left: '85%' },
+    { top: '51%', left: '21%' },
 
-  { top: '38%', left: '10%' },
-  { top: '50%', left: '93%' },
-  { top: '55%', left: '34%' },
-  { top: '50%', left: '45%' },
-  { top: '40%', left: '90%' },
-  //40
-  { top: '40%', left: '30%' },
-  { top: '70%', left: '80%' },
-  { top: '70%', left: '20%' },
-  { top: '65%', left: '5%' },
-  { top: '70%', left: '62%' },
+    { top: '38%', left: '10%' },
+    { top: '50%', left: '93%' },
+    { top: '55%', left: '34%' },
+    { top: '50%', left: '45%' },
+    { top: '40%', left: '90%' },
+    //40
+    { top: '40%', left: '30%' },
+    { top: '70%', left: '80%' },
+    { top: '70%', left: '20%' },
+    { top: '65%', left: '5%' },
+    { top: '70%', left: '62%' },
 
-  { top: '85%', left: '20%' },
-  { top: '29%', left: '75%' },
-  { top: '75%', left: '30%' },
-  { top: '43%', left: '69%' },
-  { top: '85%', left: '40%' },
-  //50
-  { top: '90%', left: '45%' },
-  { top: '85%', left: '58%' },
-  { top: '63%', left: '65%' },
-  { top: '90%', left: '75%' },
-  { top: '84%', left: '85%' },
+    { top: '85%', left: '20%' },
+    { top: '29%', left: '75%' },
+    { top: '75%', left: '30%' },
+    { top: '43%', left: '69%' },
+    { top: '85%', left: '40%' },
+    //50
+    { top: '90%', left: '45%' },
+    { top: '85%', left: '58%' },
+    { top: '63%', left: '65%' },
+    { top: '90%', left: '75%' },
+    { top: '84%', left: '85%' },
 
-  { top: '65%', left: '95%' },
-  { top: '90%', left: '90%' },
-  { top: '49%', left: '87%' },
-  { top: '50%', left: '80%' },
-  { top: '52%', left: '54%' },
-  //60
-  { top: '42%', left: '50%' },
-  { top: '25%', left: '43%' },
-  { top: '50%', left: '27%' },
-  { top: '25%', left: '20%' },
-  { top: '70%', left: '73%' },
+    { top: '65%', left: '95%' },
+    { top: '90%', left: '90%' },
+    { top: '49%', left: '87%' },
+    { top: '50%', left: '80%' },
+    { top: '52%', left: '54%' },
+    //60
+    { top: '42%', left: '50%' },
+    { top: '25%', left: '43%' },
+    { top: '50%', left: '27%' },
+    { top: '25%', left: '20%' },
+    { top: '70%', left: '73%' },
 
-  { top: '73%', left: '6%' },
-  { top: '67%', left: '12%' },
-  { top: '75%', left: '50%' },
-  { top: '69%', left: '57%' },
-  { top: '85%', left: '30%' },
-  //70
-  { top: '64%', left: '42%' },
-  { top: '40%', left: '5%' },
-  { top: '51%', left: '10%' },
-  { top: '42%', left: '17%' },
-  { top: '62%', left: '25%' },
+    { top: '73%', left: '6%' },
+    { top: '67%', left: '12%' },
+    { top: '75%', left: '50%' },
+    { top: '69%', left: '57%' },
+    { top: '85%', left: '30%' },
+    //70
+    { top: '64%', left: '42%' },
+    { top: '40%', left: '5%' },
+    { top: '51%', left: '10%' },
+    { top: '42%', left: '17%' },
+    { top: '62%', left: '25%' },
 
-  { top: '28%', left: '25%' },
-  { top: '25%', left: '83%' },
-  { top: '35%', left: '35%' },
-  { top: '29%', left: '40%' },
-  { top: '26%', left: '56%' },
-  //80
-  { top: '27%', left: '50%' },
-  { top: '40%', left: '95%' },
-  { top: '88%', left: '69%' },
-  { top: '50%', left: '69%' },
-  { top: '60%', left: '87%' },
+    { top: '28%', left: '25%' },
+    { top: '25%', left: '83%' },
+    { top: '35%', left: '35%' },
+    { top: '29%', left: '40%' },
+    { top: '26%', left: '56%' },
+    //80
+    { top: '27%', left: '50%' },
+    { top: '40%', left: '95%' },
+    { top: '88%', left: '69%' },
+    { top: '50%', left: '69%' },
+    { top: '60%', left: '87%' },
 
-  { top: '70%', left: '95%' },
-  { top: '56%', left: '73%' },
-  { top: '60%', left: '77%' },
-  { top: '55%', left: '60%' },
-  { top: '50%', left: '50%' },
-  //90
-  { top: '35%', left: '20%' },
-  { top: '47%', left: '31%' },
-  { top: '34%', left: '43%' },
-  { top: '25%', left: '78%' },
-  { top: '27%', left: '64%' },
+    { top: '70%', left: '95%' },
+    { top: '56%', left: '73%' },
+    { top: '60%', left: '77%' },
+    { top: '55%', left: '60%' },
+    { top: '50%', left: '50%' },
+    //90
+    { top: '35%', left: '20%' },
+    { top: '47%', left: '31%' },
+    { top: '34%', left: '43%' },
+    { top: '25%', left: '78%' },
+    { top: '27%', left: '64%' },
 
-  { top: '67%', left: '45%' },
-  { top: '59%', left: '20%' },
-  { top: '24%', left: '94%' },
-  { top: '65%', left: '36%' },
-  { top: '87%', left: '13%' },
+    { top: '67%', left: '45%' },
+    { top: '59%', left: '20%' },
+    { top: '24%', left: '94%' },
+    { top: '65%', left: '36%' },
+    { top: '87%', left: '13%' },
 ];
 
 function HomePage() {
@@ -159,10 +157,49 @@ function HomePage() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
 
-  const handleOpenPopup = (flower: FlowerList) => {
-    setSelectedFlower(flower);
-    setIsPopupOpen(true);
+  // ▼▼▼ ここから修正 ▼▼▼
+  const handleOpenPopup = async (flower: FlowerList) => {
+    try {
+      // 1. analysis_resultsから最新のレコードを取得
+      const { data: latestFlower, error: latestFlowerError } = await supabase
+        .from('analysis_results')
+        .select('created_at')
+        .eq('selected_flower', flower.flowertype)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single(); // .single()で単一のオブジェクトとして結果を取得
+
+      if (latestFlowerError) throw latestFlowerError;
+
+      // 2. analysis_resultsから同じ種類の花の数を取得
+      const { count, error: countError } = await supabase
+        .from('analysis_results')
+        .select('*', { count: 'exact', head: true })
+        .eq('selected_flower', flower.flowertype);
+
+      if (countError) throw countError;
+      
+      // 3. flowerlistテーブルのcountとatTimeを更新
+      const { error: updateError } = await supabase
+        .from('flowerlist')
+        .update({ 
+            count: count ?? 0,
+            atTime: latestFlower.created_at // 最新の時刻で更新
+        })
+        .eq('flowertype', flower.flowertype);
+
+      if (updateError) throw updateError;
+
+      // 4. stateを更新してポップアップを表示
+      setSelectedFlower(flower);
+      setIsPopupOpen(true);
+
+    } catch (error: any) {
+        setError(error.message);
+        console.error('エラー:', error.message);
+    }
   };
+  // ▲▲▲ ここまで修正 ▲▲▲
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
@@ -279,29 +316,27 @@ function HomePage() {
 
           // 画像が見つからない、または配置座標がない場合はスキップ
           if (!imgSrc || !position) return null;
+          
+          // FlowerDetailに渡すためのデータを作成
+          const flowerDetailData: FlowerList = {
+            flowertype: flower.selected_flower,
+            name: '', // nameはFlowerDetail側で取得するため空でOK
+          };
 
           return (
             <img
               key={flower.id || index}
               src={imgSrc}
               alt={flower.selected_flower}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110`}
+              className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110 cursor-pointer`}
               style={{
                 top: position.top,
                 left: position.left,
               }}
+              onClick={() => handleOpenPopup(flowerDetailData)}
             />
           );
         })}
-      </div>
-
-      <div className="absolute bottom-5 left-5 z-10">
-        <button
-          onClick={() => handleOpenPopup(dummyFlowers[0])}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          ポップアップ表示
-        </button>
       </div>
 
       {isPopupOpen && selectedFlower && (
