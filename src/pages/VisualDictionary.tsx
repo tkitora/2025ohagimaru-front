@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import backgroundImage from '../assets/VisualDictionary/VisualDictionaryBackGround.png';
 import cardImage from '../assets/VisualDictionary/VisualDictionaryCard.png';
-import FlowerPopup from '../components/FlowerDetail'; // Popupコンポーネントをインポート
-import type { FlowerList } from '../types'; // 型定義をインポート
+import FlowerPopup from '../components/FlowerDetail';
+import type { FlowerList } from '../types';
 
 // データの型を定義
 interface FlowerData {
@@ -20,7 +20,6 @@ const images = import.meta.glob('../assets/flowers/*.png', {
 // ファイル名から画像ソースを取得するヘルパー関数
 const getImageSrc = (type: string): string | undefined => {
   const match = Object.entries(images).find(([path]) =>
-    // ファイル名が完全に一致するように修正
     path.endsWith(`/${type}.png`)
   );
   return match?.[1];
@@ -29,8 +28,6 @@ const getImageSrc = (type: string): string | undefined => {
 function VisualDictionary() {
   const [flowers, setFlowers] = useState<FlowerData[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
-  // ▼▼▼ ここから追加 ▼▼▼
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
 
@@ -45,7 +42,6 @@ function VisualDictionary() {
     setIsPopupOpen(false);
     setSelectedFlower(null);
   };
-  // ▲▲▲ ここまで追加 ▲▲▲
 
   useEffect(() => {
     const fetchFlowers = async () => {
@@ -66,63 +62,15 @@ function VisualDictionary() {
     fetchFlowers();
   }, []);
 
-  // 花のデータを3つのグループに分割
-  const row1Flowers = flowers.slice(0, 4);
-  const row2Flowers = flowers.slice(4, 9);
-  const row3Flowers = flowers.slice(9, 13);
-
-  // 花のカードを描画する関数
-  const renderFlowerCards = (flowers: FlowerData[]) => {
-    return flowers.map((flower, index) => {
-      const imgSrc = getImageSrc(flower.flowertype);
-
-      if (!imgSrc) {
-        console.warn(`画像が見つかりません: ${flower.flowertype}.png`);
-        return null;
-      }
-      
-      // FlowerDetailに渡すためのデータを作成
-      const flowerDetailData: FlowerList = {
-        flowertype: flower.flowertype,
-        name: flower.name,
-      };
-
-      return (
-        <div
-          key={index}
-          className="relative w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 flex-shrink-0 flex flex-col items-center justify-center p-2
-          transition-transform duration-300 hover:scale-110 cursor-pointer" // cursor-pointerを追加
-          onClick={() => handleOpenPopup(flowerDetailData)} // ★★★ onClickイベントを追加 ★★★
-        >
-          {/* カードの背景画像 */}
-          <img
-            src={cardImage}
-            alt="Card Background"
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          {/* 花の画像 */}
-          <img
-            src={imgSrc}
-            alt={flower.flowertype}
-            className="relative z-10 w-2/3 h-2/3 object-contain"
-          />
-          {/* 花の名前 */}
-          <span className="relative z-10 text-center font-bold text-lg md:text-xl mt-2 text-amber-900">
-            {flower.name}
-          </span>
-        </div>
-      );
-    });
-  };
-
   return (
+    // ▼▼▼ overflow-hiddenに変更し、paddingを少し調整 ▼▼▼
     <div
-      className="w-screen h-screen relative flex flex-col items-center justify-center overflow-auto p-10"
+      className="w-screen h-screen relative flex flex-col items-center justify-center overflow-hidden p-4"
       style={{
         fontFamily: 'Inter, sans-serif',
       }}
     >
-      {/* 背景画像をコンテナとして独立させる */}
+      {/* 背景画像 */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -133,6 +81,17 @@ function VisualDictionary() {
         }}
       ></div>
 
+      {/* 右上の「花畑へ」ボタン */}
+      <div className="absolute top-5 right-5 z-20">
+        <a 
+          href="/flowergarden" 
+          className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-800 transition-colors duration-300"
+        >
+          花畑へ
+        </a>
+      </div>
+
+      {/* エラー表示 */}
       {error && (
         <div className="absolute top-5 left-5 z-20 rounded-md bg-red-100 p-4 text-red-700">
           <p className="font-bold">エラーが発生しました</p>
@@ -140,25 +99,46 @@ function VisualDictionary() {
         </div>
       )}
       
-      {/* コンテンツをz-indexで前面に持ってくる */}
-      <div className="relative z-10 flex flex-col items-center space-y-8 md:space-y-12">
-        {/* 1行目: 4つの花 */}
-        <div className="flex justify-center flex-wrap gap-4 md:gap-8">
-          {renderFlowerCards(row1Flowers)}
-        </div>
+      {/* ▼▼▼ 3つの行を1つのコンテナに統合 ▼▼▼ */}
+      <div className="relative z-10 flex flex-wrap justify-center items-center gap-2 md:gap-4 max-w-6xl">
+        {flowers.map((flower, index) => {
+          const imgSrc = getImageSrc(flower.flowertype);
+          if (!imgSrc) {
+            console.warn(`画像が見つかりません: ${flower.flowertype}.png`);
+            return null;
+          }
+          
+          const flowerDetailData: FlowerList = {
+            flowertype: flower.flowertype,
+            name: flower.name,
+          };
 
-        {/* 2行目: 5つの花 */}
-        <div className="flex justify-center flex-wrap gap-4 md:gap-8">
-          {renderFlowerCards(row2Flowers)}
-        </div>
-
-        {/* 3行目: 4つの花 */}
-        <div className="flex justify-center flex-wrap gap-4 md:gap-8">
-          {renderFlowerCards(row3Flowers)}
-        </div>
+          return (
+            <div
+              key={index}
+              className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 flex-shrink-0 flex flex-col items-center justify-center p-2
+              transition-transform duration-300 hover:scale-110 cursor-pointer"
+              onClick={() => handleOpenPopup(flowerDetailData)}
+            >
+              <img
+                src={cardImage}
+                alt="Card Background"
+                className="absolute inset-0 w-full h-full object-contain"
+              />
+              <img
+                src={imgSrc}
+                alt={flower.flowertype}
+                className="relative z-10 w-2/3 h-2/3 object-contain"
+              />
+              <span className="relative z-10 text-center font-bold text-base md:text-lg mt-1 text-amber-900">
+                {flower.name}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ▼▼▼ ポップアップの表示処理を追加 ▼▼▼ */}
+      {/* ポップアップ表示 */}
       {isPopupOpen && selectedFlower && (
         <FlowerPopup flower={selectedFlower} onClose={handleClosePopup} />
       )}

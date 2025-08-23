@@ -6,7 +6,7 @@ import { HomePage, GardenPage, MyGardenPage, Header, FlowerGardenPage,VisualDict
 function App() {
   return (
     <Router>
-      <Header />
+      {/*<Header />*/}
       <main>
         <Routes>
           <Route path='/' element={<HomePage />} />
