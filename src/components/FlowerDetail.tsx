@@ -38,7 +38,6 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
                     .limit(1)
                     .single();
 
-                // ★★★ ここからが修正箇所 ★★★
 
                 // ケース1: 花がまだ花畑に登録されていない場合
                 // (.single()はデータがないとエラーを返すので、そのエラーを検知)
@@ -89,7 +88,6 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
                     
                     setFlowerData(finalData);
                 }
-                // ★★★ 修正箇所ここまで ★★★
 
             } catch (error: any) {
                 setError(error.message);
@@ -105,8 +103,16 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
     )?.[1];
     
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+        // ▼▼▼ この一番外側のdivにonClickイベントを追加 ▼▼▼
+        <div 
+            className="fixed inset-0 flex items-center justify-center z-50"
+            onClick={onClose} // 背景をクリックしたら閉じる
+        >
+            {/* ▼▼▼ ポップアップ本体のdivには、クリックイベントが親に伝わらないように設定 ▼▼▼ */}
+            <div 
+                className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center"
+                onClick={(e) => e.stopPropagation()} // ポップアップ内のクリックは伝播させない
+            >
                 {error ? (
                     <p className="text-red-500">{error}</p>
                 ) : flowerData ? (
@@ -115,7 +121,6 @@ const FlowerPopup = ({ flower, onClose }: FlowerDetailProps) => {
                         <h2 className="text-2xl font-bold mb-4">{flowerData.name}</h2>
                         <p>花言葉: {flowerData.flowerWord}</p>
 
-                        {/* ▼▼▼ atTimeの値に応じて表示を切り替える ▼▼▼ */}
                         {flowerData.atTime === 'not-registered' ? (
                             <p className="font-bold text-red-500 mt-2">まだ花畑に登録されていません！</p>
                         ) : (

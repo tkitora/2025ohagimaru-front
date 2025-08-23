@@ -156,6 +156,16 @@ function FlowerGardenPage() {
     >
       <RotatingSun />
 
+      <div className="absolute top-5 right-5 z-20">
+        <a 
+          href="/visualdictionary" 
+          className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300"
+        >
+          図鑑へ
+        </a>
+      </div>
+
+
       {error && (
         <div className="absolute top-5 left-5 z-20 rounded-md bg-red-100 p-4 text-red-700">
           <p className="font-bold">エラーが発生しました</p>
