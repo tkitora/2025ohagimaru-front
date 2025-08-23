@@ -117,7 +117,7 @@ function FlowerGardenPage() {
           timerId.current = setTimeout(() => {
             setShowLargeFlower(false);
             setLatestFlowerType(null);
-          }, 5000);
+          }, 8000);
         } else {
           setShowLargeFlower(false);
           setLatestFlowerType(null);
