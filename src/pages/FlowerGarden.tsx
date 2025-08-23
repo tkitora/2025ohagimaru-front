@@ -4,11 +4,13 @@ import RotatingSun from '../components/RotatingSun';
 import { supabase } from '../lib/supabaseClient';
 import FlowerPopup from '../components/FlowerDetail';
 import type { FlowerList } from '../types';
+import FlowerShadow from '../assets/flowers/FlowerShadow.png';
 
 // データの型を定義します。supabaseから取得するデータの構造に合わせます。
 interface FlowerData {
   id: number;
   selected_flower: string;
+  created_at: string;
 }
 
 // アセットフォルダ内のすべての花画像をまとめてインポート
@@ -54,8 +56,8 @@ function FlowerGardenPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState<FlowerList | null>(null);
+  const [latestFlower, setLatestFlower] = useState<FlowerData | null>(null);
 
-  // ポップアップを開く命令を出すだけのシンプルな関数
   const handleOpenPopup = (flower: FlowerList) => {
     setSelectedFlower(flower);
     setIsPopupOpen(true);
@@ -66,34 +68,76 @@ function FlowerGardenPage() {
     setSelectedFlower(null);
   };
 
-  // 最初に一度だけ花畑のデータを取得する
   useEffect(() => {
     const fetchFlowers = async () => {
       const { data, error: fetchError } = await supabase
         .from('analysis_results')
-        .select('id, selected_flower');
+        .select('id, selected_flower, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (fetchError) {
         setError(fetchError.message);
         console.error('データの読み取りエラー: ', fetchError.message);
         return;
       }
-      setFlowers(data as FlowerData[]);
+
+      if (data && data.length > 0) {
+        const latest = data[0];
+        const currentTime = new Date();
+        const flowerTime = new Date(latest.created_at);
+
+        if (currentTime.getTime() - flowerTime.getTime() <= 15000) {
+          setLatestFlower(latest);
+          setSelectedFlower({
+            flowertype: latest.selected_flower,
+            name: '',
+          });
+          setIsPopupOpen(true);
+        } else {
+          const { data: allData, error: allError } = await supabase
+            .from('analysis_results')
+            .select('id, selected_flower, created_at');
+
+          if (allError) {
+            setError(allError.message);
+            console.error('全データの読み取りエラー: ', allError.message);
+            return;
+          }
+          setFlowers(allData as FlowerData[]);
+          setLatestFlower(null);
+        }
+      }
     };
 
     fetchFlowers();
   }, []);
 
-  // 花の数に応じて画像のサイズを動的に変更
   const numFlowers = flowers.length;
   let imageSize;
-  if (numFlowers <= 5) imageSize = 'w-90 h-90';
-  else if (numFlowers <= 10) imageSize = 'w-72 h-72';
-  else if (numFlowers <= 20) imageSize = 'w-64 h-64';
-  else if (numFlowers <= 40) imageSize = 'w-42 h-42';
-  else if (numFlowers <= 60) imageSize = 'w-36 h-36';
-  else if (numFlowers <= 80) imageSize = 'w-32 h-32';
-  else imageSize = 'w-28 h-28';
+  let shadowSize;
+  if (numFlowers <= 5) {
+    imageSize = 'w-90 h-90';
+    shadowSize = 'w-40';
+  } else if (numFlowers <= 10) {
+    imageSize = 'w-72 h-72';
+    shadowSize = 'w-36';
+  } else if (numFlowers <= 20) {
+    imageSize = 'w-64 h-64';
+    shadowSize = 'w-32';
+  } else if (numFlowers <= 40) {
+    imageSize = 'w-42 h-42';
+    shadowSize = 'w-24';
+  } else if (numFlowers <= 60) {
+    imageSize = 'w-36 h-36';
+    shadowSize = 'w-20';
+  } else if (numFlowers <= 80) {
+    imageSize = 'w-32 h-32';
+    shadowSize = 'w-16';
+  } else {
+    imageSize = 'w-28 h-28';
+    shadowSize = 'w-12';
+  }
 
   return (
     <div
@@ -113,29 +157,43 @@ function FlowerGardenPage() {
       )}
 
       <div className="absolute inset-0">
-        {flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
-          const imgSrc = getImageSrc(flower.selected_flower);
-          // 花の配置がランダムになるようにindex（配列の順番）を使用
-          const position = FLOWER_POSITIONS[index];
+        {latestFlower ? (
+          <img
+            key={latestFlower.id}
+            src={getImageSrc(latestFlower.selected_flower)}
+            alt={latestFlower.selected_flower}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] transition-transform duration-500 hover:scale-110 z-10"
+            onClick={() => handleOpenPopup({ flowertype: latestFlower.selected_flower, name: '' })}
+          />
+        ) : (
+          flowers.slice(0, FLOWER_POSITIONS.length).map((flower, index) => {
+            const imgSrc = getImageSrc(flower.selected_flower);
+            const position = FLOWER_POSITIONS[index];
+            if (!imgSrc || !position) return null;
+            
+            const flowerDetailData: FlowerList = {
+              flowertype: flower.selected_flower,
+              name: '',
+            };
 
-          if (!imgSrc || !position) return null;
-          
-          const flowerDetailData: FlowerList = {
-            flowertype: flower.selected_flower,
-            name: '',
-          };
-
-          return (
-            <img
-              key={flower.id}
-              src={imgSrc}
-              alt={flower.selected_flower}
-              className={`absolute transform -translate-x-1/2 -translate-y-1/2 ${imageSize} transition-transform duration-500 hover:scale-110 cursor-pointer`}
-              style={{ top: position.top, left: position.left }}
-              onClick={() => handleOpenPopup(flowerDetailData)}
-            />
-          );
-        })}
+            return (
+              <div key={flower.id} className="absolute" style={{ top: position.top, left: position.left, transform: 'translate(-50%, -50%)' }}>
+                <img
+                  src={FlowerShadow}
+                  alt="Flower shadow"
+                  className={`${shadowSize} h-auto absolute bottom-0 left-1/2 z-0 opacity-50`}
+                  style={{ transform: 'translateX(-50%) translateY(25%)', filter: 'blur(5px)'}}
+                />
+                <img
+                  src={imgSrc}
+                  alt={flower.selected_flower}
+                  className={`${imageSize} relative z-10 transition-transform duration-500 hover:scale-110 cursor-pointer`}
+                  onClick={() => handleOpenPopup(flowerDetailData)}
+                />
+              </div>
+            );
+          })
+        )}
       </div>
 
       {isPopupOpen && selectedFlower && (
