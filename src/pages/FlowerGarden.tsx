@@ -35,8 +35,10 @@ function FlowerGardenPage() {
     >
       <RotatingSun />
 
-      <a href="/visualdictionary" className="absolute top-5 right-5 z-20 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300">
-        図鑑へ
+      <a 
+      href="/visualdictionary"
+      className="fixed top-5 right-5 z-20 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-300">
+      図鑑へ
       </a>
 
       {error && (
@@ -51,7 +53,7 @@ function FlowerGardenPage() {
           <img
             src={getImageSrc(latestFlowerType)}
             alt={latestFlowerType}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 z-40"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-196 h-196 z-40"
           />
         ) : (
           <FlowerGardenLayout flowers={flowers} onFlowerClick={handleOpenPopup} />

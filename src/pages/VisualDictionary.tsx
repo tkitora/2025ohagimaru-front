@@ -84,10 +84,9 @@ function VisualDictionary() {
       {/* 右上の「花畑へ」ボタン */}
       <div className="absolute top-5 right-5 z-20">
         <a 
-          href="/flowergarden" 
-          className="bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-800 transition-colors duration-300"
-        >
-          花畑へ
+        href="/flowergarden" 
+        className="fixed top-5 right-5 z-20 bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-800 transition-colors duration-300">
+        花畑へ
         </a>
       </div>
 
