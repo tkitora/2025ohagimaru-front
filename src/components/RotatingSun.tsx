@@ -1,4 +1,4 @@
-import sunImage from '@/assets/Home/sun.png';
+import sunImage from '../assets/Home/sun.png';
 
 const RotatingSun = () => {
   return (
