@@ -6,7 +6,6 @@ import { HomePage, GardenPage, MyGardenPage, FlowerGardenPage,VisualDictionaryPa
 function App() {
   return (
     <Router>
-      {/*<Header />*/}
       <main>
         <Routes>
           <Route path='/' element={<HomePage />} />
@@ -16,7 +15,6 @@ function App() {
           <Route path='visualdictionary' element={<VisualDictionaryPage />} />
         </Routes>
       </main>
-      {/*<Footer />*/}
     </Router>
   )
 }
