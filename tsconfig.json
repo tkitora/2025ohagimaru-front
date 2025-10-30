@@ -1,4 +1,14 @@
+// tsconfig.json
 {
+  // ▼▼▼ この compilerOptions ブロックを追加 ▼▼▼
+  "compilerOptions": {
+    "baseUrl": ".", // プロジェクトルートを基準にする
+    "paths": {
+      "@/*": ["src/*"] // "@/..." を "src/..." として解釈する
+    }
+  },
+  // ▲▲▲ ここまで追加 ▲▲▲
+
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
